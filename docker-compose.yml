@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: .
+    container_name: vocational-frontend
+    environment:
+      VITE_AUTH_API: http://localhost:8000
+      VITE_INST_API: http://localhost:8001
+      VITE_TEST_API: http://localhost:8002
+      VITE_NEWS_API: http://localhost:8003
+      VITE_MEETS_API: http://localhost:8004
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
