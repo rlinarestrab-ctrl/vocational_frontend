@@ -1,4 +1,5 @@
 import React from "react";
+import { Compass } from "lucide-react"; // 🧭 Icono de brújula
 
 export default function Navbar({ me, onLogout }) {
   // 🧠 Obtener datos del usuario (desde estado o localStorage)
@@ -8,12 +9,15 @@ export default function Navbar({ me, onLogout }) {
 
   return (
     <nav className="bg-blue-600 text-white px-6 py-3 shadow-md flex justify-between items-center">
-      {/* Logo / Nombre app */}
-      <div className="text-lg font-bold">
-        🎓 Orientación Vocacional
+      {/* 🧭 Logo / Nombre app */}
+      <div className="flex items-center gap-2">
+        <Compass className="w-6 h-6 text-white" />
+        <span className="text-lg font-bold tracking-wide">
+          Tu Ruta Educativa
+        </span>
       </div>
 
-      {/* Usuario y logout */}
+      {/* 👤 Usuario y logout */}
       <div className="flex items-center gap-4">
         <div className="text-sm">
           <span className="font-semibold">

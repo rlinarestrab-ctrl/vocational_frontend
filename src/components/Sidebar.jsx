@@ -53,7 +53,7 @@ export default function Sidebar({ setView, view, subView, setSubView }) {
     <aside className="w-64 min-h-screen bg-gradient-to-b from-indigo-600 to-blue-500 text-white shadow-lg flex flex-col">
       {/* Encabezado */}
       <div className="p-5 text-center border-b border-indigo-400">
-        <h1 className="text-2xl font-bold tracking-wide">🎓 Tu Ruta</h1>
+        <h1 className="text-2xl font-bold tracking-wide">🎓 Tu Ruta Educativa</h1>
         <p className="text-sm text-indigo-200">{rol.toUpperCase()}</p>
       </div>
 

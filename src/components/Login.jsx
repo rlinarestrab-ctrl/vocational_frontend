@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 const API_BASE = import.meta.env.VITE_AUTH_API || "http://localhost:8000";
 
 export default function Login({ onLogin }) {
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("admin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
