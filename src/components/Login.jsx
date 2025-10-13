@@ -1,64 +1,91 @@
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_AUTH_API || "http://localhost:8000"
+const API_BASE = import.meta.env.VITE_AUTH_API || "http://localhost:8000";
 
 export default function Login({ onLogin }) {
-  const [email, setEmail] = useState("admin@example.com")
-  const [password, setPassword] = useState("admin")
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("admin");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // 🔐 Login con usuario y contraseña
   const submit = async (e) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      if (!res.ok) throw new Error("Credenciales inválidas")
-
-      const data = await res.json()
-
-      // Guardar tokens y usuario
-      localStorage.setItem("access", data.tokens.access)
-      localStorage.setItem("refresh", data.tokens.refresh)
-      localStorage.setItem("me", JSON.stringify(data.user))
-
-      // Notificar al componente padre (App.jsx)
-      onLogin(data.tokens.access, data.tokens.refresh, data.user)
-
-      // Redirigir según el rol del usuario
-      if (data.user.rol === "admin") {
-        navigate("/dashboard")
-      } else {
-        navigate("/dashboard") // más adelante puede ser /perfil-estudiante
+      // 🚫 Si el backend devuelve cuenta inactiva
+      if (res.status === 403) {
+        const data = await res.json();
+        setError(
+          data.detail ||
+            "Tu cuenta está inactiva. Un administrador debe activarla antes de ingresar."
+        );
+        setLoading(false);
+        return;
       }
+
+      // ❌ Credenciales inválidas
+      if (res.status === 401 || res.status === 400) {
+        setError("Credenciales incorrectas.");
+        setLoading(false);
+        return;
+      }
+
+      // ⚠️ Cualquier otro error inesperado
+      if (!res.ok) {
+        setError("Error al conectar con el servidor.");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      const { tokens, user } = data;
+
+      // ✅ Guardar tokens y datos del usuario
+      localStorage.clear();
+      localStorage.setItem("access", tokens.access);
+      localStorage.setItem("refresh", tokens.refresh);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("nombre", user.nombre || "");
+      localStorage.setItem("apellido", user.apellido || "");
+      localStorage.setItem("rol", user.rol || "estudiante");
+      localStorage.setItem("activo", user.activo);
+      localStorage.setItem("me", JSON.stringify(user));
+
+      // 🔄 Notificar al App.jsx
+      onLogin(tokens.access, tokens.refresh, user);
+
+      // 🚀 Redirigir al dashboard
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.message)
+      console.error("Error de login:", err);
+      setError("Error de conexión con el servidor.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // 🌐 Login con Google
   const loginWithGoogle = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/google/login/`)
-      if (!res.ok) throw new Error("Error al conectar con Google")
-      const data = await res.json()
-      window.location.href = data.auth_url
+      const res = await fetch(`${API_BASE}/api/auth/google/login/`);
+      if (!res.ok) throw new Error("Error al conectar con Google");
+      const data = await res.json();
+      window.location.href = data.auth_url;
     } catch (err) {
-      console.error("Error iniciando login con Google:", err)
-      setError("Error iniciando sesión con Google")
+      console.error("Error iniciando login con Google:", err);
+      setError("Error iniciando sesión con Google");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 px-4">
@@ -125,7 +152,18 @@ export default function Login({ onLogin }) {
           />
           Entrar con Google
         </button>
+
+        {/* 🧭 Enlace de registro */}
+        <p className="text-center text-sm text-gray-600 mt-4">
+          ¿No tienes cuenta?{" "}
+          <a
+            href="/register"
+            className="text-blue-600 hover:underline font-semibold"
+          >
+            Regístrate aquí
+          </a>
+        </p>
       </div>
     </div>
-  )
+  );
 }

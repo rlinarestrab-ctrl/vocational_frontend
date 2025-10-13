@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function GoogleCallback() {
+export default function Callback() {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,13 +11,13 @@ export default function GoogleCallback() {
     const access = params.get("access");
     const refresh = params.get("refresh");
 
-    // 🧩 Información del usuario
-    const email = params.get("email");
-    const nombre = params.get("nombre");
-    const apellido = params.get("apellido");
-    const rol = params.get("rol");
+    // 🧩 Información del usuario (si el backend los manda en la URL)
+    let email = params.get("email");
+    let nombre = params.get("nombre");
+    let apellido = params.get("apellido");
+    let rol = params.get("rol");
 
-    // 🧩 Tokens de Google (solo si los necesitas para Calendar)
+    // 🧩 Tokens de Google (solo si usas Calendar / Meet)
     const google_access_token = params.get("google_access_token");
     const google_refresh_token = params.get("google_refresh_token");
 
@@ -32,19 +32,30 @@ export default function GoogleCallback() {
       localStorage.setItem("access", access);
       localStorage.setItem("refresh", refresh);
 
-      // 👤 Guardar datos básicos del usuario
-      localStorage.setItem("email", email);
-      localStorage.setItem("nombre", nombre);
-      localStorage.setItem("apellido", apellido);
-      localStorage.setItem("rol", rol);
+      // 🔍 Si faltan datos, los extraemos del JWT (más confiable)
+      try {
+        const payload = JSON.parse(atob(access.split(".")[1]));
+        email = email || payload.email;
+        nombre = nombre || payload.nombre;
+        apellido = apellido || payload.apellido;
+        rol = rol || payload.rol;
+      } catch (error) {
+        console.warn("⚠️ No se pudo decodificar el token:", error);
+      }
 
-      // (Opcional) Tokens de Google, solo si usarás Calendar o Meet
+      // 👤 Guardar datos básicos del usuario
+      if (email) localStorage.setItem("email", email);
+      if (nombre) localStorage.setItem("nombre", nombre);
+      if (apellido) localStorage.setItem("apellido", apellido);
+      if (rol) localStorage.setItem("rol", rol);
+
+      // 🧩 Guardar tokens de Google (si existen)
       if (google_access_token)
         localStorage.setItem("google_access_token", google_access_token);
       if (google_refresh_token)
         localStorage.setItem("google_refresh_token", google_refresh_token);
 
-      // 🚀 Redirige al dashboard o página principal
+      // 🚀 Redirige al dashboard principal
       navigate("/dashboard");
     } else {
       console.error("❌ No se recibieron tokens válidos en el callback.");

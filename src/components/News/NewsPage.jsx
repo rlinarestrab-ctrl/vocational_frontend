@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import NoticiaCard from "./NewsCard";
-import NewsForm from "./NewsForm"; // 👈 nuevo formulario para publicar
+import NewsCard from "./NewsCard";
+import NewsForm from "./NewsForm";
 
 const API_NEWS = import.meta.env.VITE_NEWS_API;
 
@@ -18,7 +18,6 @@ export default function NoticiasPage({ token, me }) {
       if (!res.ok) throw new Error("Error al obtener publicaciones");
       const data = await res.json();
 
-      // ✅ Manejar respuesta paginada o lista directa
       if (Array.isArray(data)) {
         setPublicaciones(data);
       } else if (data.results) {
@@ -38,9 +37,43 @@ export default function NoticiasPage({ token, me }) {
     fetchNews();
   }, [token]);
 
-  // 👇 se ejecuta cuando se crea una nueva publicación
   const handleCreated = (nuevaPublicacion) => {
     setPublicaciones((prev) => [nuevaPublicacion, ...prev]);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar esta publicación?")) return;
+    try {
+      const res = await fetch(`${API_NEWS}/api/publicaciones/${id}/eliminar/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        alert("✅ Publicación eliminada correctamente.");
+        fetchNews();
+      } else {
+        const errData = await res.json();
+        alert(errData.detail || "❌ No tienes permiso para eliminar esta publicación.");
+      }
+    } catch (err) {
+      console.error("Error al eliminar publicación:", err);
+    }
+  };
+
+  const handleLike = async (id) => {
+    try {
+      const res = await fetch(`${API_NEWS}/api/publicaciones/${id}/like/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) fetchNews();
+    } catch (err) {
+      console.error("Error al dar like:", err);
+    }
   };
 
   if (loading) {
@@ -55,7 +88,6 @@ export default function NoticiasPage({ token, me }) {
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-4">📰 Noticias y Publicaciones</h2>
 
-      {/* 👇 Formulario visible solo para admin o institución */}
       {(me?.rol === "admin" || me?.rol === "institucion") && (
         <NewsForm token={token} onCreated={handleCreated} />
       )}
@@ -66,7 +98,14 @@ export default function NoticiasPage({ token, me }) {
         </div>
       ) : (
         publicaciones.map((pub) => (
-          <NoticiaCard key={pub.id} publicacion={pub} token={token} me={me} />
+          <NewsCard
+            key={pub.id}
+            publicacion={pub}
+            me={me}
+            token={token}
+            onDelete={handleDelete}
+            onLike={handleLike}
+          />
         ))
       )}
     </div>

@@ -1,34 +1,88 @@
-// ✅ src/components/ProtectedRoute.jsx
-import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 
-export default function ProtectedRoute({ children, token }) {
+/**
+ * 🧠 Verifica si un JWT es válido o está expirado.
+ */
+function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const now = Date.now() / 1000;
+    return payload.exp < now; // true si expiró
+  } catch (err) {
+    console.warn("⚠️ Error al decodificar el token:", err);
+    return true;
+  }
+}
+
+/**
+ * 🧩 ProtectedRoute — protege rutas que requieren sesión activa y rol autorizado
+ * - Revisa si el token existe, no expiró y si el rol tiene permiso.
+ */
+export default function ProtectedRoute({ children, token, allowedRoles = [] }) {
+  const [valid, setValid] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [validToken, setValidToken] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
-    if (token) {
-      console.log("✅ Token recibido en ProtectedRoute:", token.slice(0, 15) + "...");
-      setValidToken(true);
-    } else {
-      const savedAccess = localStorage.getItem("access");
-      if (savedAccess) {
-        console.log("♻️ Restaurando token desde localStorage:", savedAccess.slice(0, 15) + "...");
-        setValidToken(true);
-      } else {
-        console.warn("⛔ No hay token guardado ni recibido");
-        setValidToken(false);
+    let activeToken = token || localStorage.getItem("access");
+
+    if (activeToken && !isTokenExpired(activeToken)) {
+      try {
+        const payload = JSON.parse(atob(activeToken.split(".")[1]));
+        const userRole = payload.rol || localStorage.getItem("rol");
+
+        console.log("🔐 Validando acceso:", {
+          rolDetectado: userRole,
+          rolesPermitidos: allowedRoles,
+        });
+
+        // ✅ Si la ruta requiere rol y el usuario no está permitido → bloquea
+        if (
+          allowedRoles.length > 0 &&
+          !allowedRoles.map((r) => r.toLowerCase()).includes(userRole?.toLowerCase())
+        ) {
+          console.warn(`🚫 Rol '${userRole}' no autorizado para esta ruta.`);
+          setValid(false);
+        } else {
+          console.log("✅ Token y rol válidos, acceso permitido.");
+          setValid(true);
+        }
+      } catch (err) {
+        console.error("❌ Error al decodificar token:", err);
+        setValid(false);
       }
+    } else {
+      console.warn("⛔ Token ausente o expirado. Limpiando sesión...");
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      localStorage.removeItem("me");
+      setValid(false);
     }
+
     setChecking(false);
-  }, [token]);
+  }, [token, allowedRoles]);
 
   if (checking) {
-    return <p className="text-center mt-10 text-gray-500">Cargando sesión...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-screen text-gray-500">
+        Cargando sesión...
+      </div>
+    );
   }
 
-  if (!validToken) {
-    return <Navigate to="/login" replace />;
+  if (!valid) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Tu sesión ha expirado o no tienes permisos suficientes.",
+        }}
+      />
+    );
   }
 
   return children;

@@ -1,82 +1,145 @@
 import React, { useState } from "react";
-import Comentarios from "./Comentarios";
+import { Trash2, Heart } from "lucide-react";
 
 const API_NEWS = import.meta.env.VITE_NEWS_API;
 
-export default function NoticiaCard({ publicacion, token, me }) {
-  const [likes, setLikes] = useState(publicacion.likes_count || 0);
-  const [liked, setLiked] = useState(publicacion.liked_by_user || false);
+export default function NewsCard({ publicacion, me, token, onDelete, onLike }) {
+  const {
+    id,
+    titulo,
+    contenido,
+    imagen,
+    fecha_publicacion,
+    tipo_autor,
+    autor_id,
+    comentarios = [],
+    likes_count = 0,
+  } = publicacion;
 
-  // ✅ Definir imagenUrl antes del return
-  const imagenUrl =
-    publicacion.imagen && publicacion.imagen.startsWith("http")
-      ? publicacion.imagen
-      : publicacion.imagen
-      ? `${API_NEWS}${publicacion.imagen}`
-      : null;
+  const [nuevoComentario, setNuevoComentario] = useState("");
+  const [comentariosLocal, setComentariosLocal] = useState(comentarios);
 
-  const toggleLike = async () => {
-    if (!token) return alert("Debes iniciar sesión para dar like");
+  const puedeEliminar = me && (me.rol === "admin" || me.id === autor_id);
+
+  const fechaFormateada = fecha_publicacion
+    ? new Date(fecha_publicacion).toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Sin fecha";
+
+  const handleComentar = async (e) => {
+    e.preventDefault();
+    if (!nuevoComentario.trim()) return;
+
     try {
-      const res = await fetch(
-        `${API_NEWS}/api/publicaciones/${publicacion.id}/like_toggle/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${API_NEWS}/api/comentarios/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          publicacion: id,
+          contenido: nuevoComentario,
+        }),
+      });
+
       if (res.ok) {
-        setLiked(!liked);
-        setLikes((prev) => (liked ? prev - 1 : prev + 1));
+        const data = await res.json();
+        setComentariosLocal((prev) => [...prev, data]);
+        setNuevoComentario("");
       } else {
-        console.error(await res.text());
+        const errData = await res.json();
+        console.error("Error al comentar:", errData);
       }
     } catch (err) {
-      console.error("Error al enviar like:", err);
+      console.error("❌ Error al enviar comentario:", err);
     }
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow hover:shadow-md transition">
-      <h3 className="text-xl font-semibold">{publicacion.titulo}</h3>
+    <div className="bg-white rounded-xl shadow p-4 space-y-2">
+      <div className="flex justify-between items-center">
+        <h3 className="font-semibold text-lg text-gray-800">{titulo || "Sin título"}</h3>
+        {puedeEliminar && (
+          <button
+            onClick={() => onDelete && onDelete(id)}
+            className="text-red-500 hover:text-red-700"
+            title="Eliminar publicación"
+          >
+            <Trash2 size={18} />
+          </button>
+        )}
+      </div>
 
-      {/* ✅ Imagen responsive con proporción */}
-      {imagenUrl && (
-        <div className="relative w-full overflow-hidden rounded-xl mt-3 aspect-[16/9] bg-gray-50">
-          <img
-            src={imagenUrl}
-            alt={publicacion.titulo}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-            onError={(e) => {
-              e.target.src = "/default-image.jpg";
-            }}
-          />
-        </div>
+      <p className="text-sm text-gray-500">
+        📅 {fechaFormateada} — 👤 {tipo_autor === "institucion" ? "Institución" : "Usuario"}
+      </p>
+
+      {imagen && (
+        <img
+          src={imagen}
+          alt="Imagen de publicación"
+          className="w-full h-64 object-cover rounded-lg my-2"
+        />
       )}
 
       <div
-        className="text-gray-700 mt-2 prose prose-indigo max-w-none"
-        dangerouslySetInnerHTML={{ __html: publicacion.contenido }}
-      ></div>
+        className="text-gray-800 text-sm prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: contenido || "" }}
+      />
 
-      <div className="mt-3 flex items-center justify-between">
+      <div className="flex items-center gap-2 text-gray-500">
         <button
-          onClick={toggleLike}
-          className={`px-3 py-1 rounded text-sm transition ${
-            liked ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
-          }`}
+          onClick={() => onLike && onLike(id)}
+          className="flex items-center gap-1 hover:text-red-500 transition"
         >
-          ❤️ {likes} Me gusta
+          <Heart size={16} />
+          <span>{likes_count}</span>
         </button>
-        <span className="text-xs text-gray-400">
-          {new Date(publicacion.fecha_publicacion).toLocaleDateString()}
-        </span>
       </div>
 
-      <div className="mt-4 border-t pt-2">
-        <Comentarios publicacionId={publicacion.id} token={token} me={me} />
+      {/* 💬 Comentarios */}
+      <div className="pt-3 border-t mt-2">
+        <h4 className="font-semibold text-gray-700 mb-2">
+          Comentarios ({comentariosLocal.length})
+        </h4>
+
+        {comentariosLocal.length === 0 ? (
+          <p className="text-gray-500 text-sm">No hay comentarios aún.</p>
+        ) : (
+          comentariosLocal.map((c) => (
+            <div key={c.id} className="border-b pb-1 mb-1">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-blue-600">
+                  {c.usuario_nombre || "Usuario"}
+                </span>{" "}
+                <span className="text-gray-400 text-xs ml-2">
+                  {c.fecha_formateada}
+                </span>
+              </p>
+              <p className="text-gray-800 text-sm">{c.contenido}</p>
+            </div>
+          ))
+        )}
+
+        <form onSubmit={handleComentar} className="flex flex-col gap-2 mt-2">
+          <textarea
+            value={nuevoComentario}
+            onChange={(e) => setNuevoComentario(e.target.value)}
+            placeholder="Escribe un comentario..."
+            className="w-full p-2 border rounded-lg resize-none text-sm focus:ring focus:ring-blue-200"
+            rows="2"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm self-end"
+          >
+            Enviar
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 
 export default function Sidebar({ setView, view, subView, setSubView }) {
-  const user = JSON.parse(localStorage.getItem("me"));
-  const rol = user?.rol || "estudiante";
+  // 🧠 Intentamos obtener los datos del usuario de forma segura
+  const user = JSON.parse(localStorage.getItem("me")) || {};
+  const rol =
+    user.rol ||
+    localStorage.getItem("rol") ||
+    "estudiante";
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
@@ -10,8 +14,9 @@ export default function Sidebar({ setView, view, subView, setSubView }) {
     setOpenSubmenu(openSubmenu === id ? null : id);
   };
 
+  // 🧩 Menú según el rol del usuario
   const menuItems =
-    rol === "admin"
+    rol.toLowerCase() === "admin"
       ? [
           { id: "users", label: "👥 Usuarios" },
           { id: "instituciones", label: "🏫 Instituciones" },
@@ -53,7 +58,7 @@ export default function Sidebar({ setView, view, subView, setSubView }) {
       </div>
 
       {/* Navegación */}
-      <nav className="flex-1 p-3">
+      <nav className="flex-1 p-3 overflow-y-auto">
         {menuItems.map((item) => (
           <div key={item.id}>
             {/* Botón principal */}
@@ -61,7 +66,6 @@ export default function Sidebar({ setView, view, subView, setSubView }) {
               onClick={() => {
                 if (item.subitems) {
                   toggleSubmenu(item.id);
-                  // Solo despliega el submenú, sin cambiar la vista principal
                 } else {
                   setView(item.id);
                   setSubView(null);
