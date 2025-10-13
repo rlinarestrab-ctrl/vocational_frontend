@@ -112,7 +112,20 @@ export default function Sidebar({ setView, view, subView, setSubView }) {
 
       {/* Pie */}
       <div className="text-center p-4 border-t border-indigo-400 text-sm text-indigo-200">
-        Orientación Vocacional © 2025
+        Tu Ruta Educativa © 2025
+        <br />
+        <span className="text-[10px] text-indigo-200">
+          Icono de brújula por{" "}
+          <a
+            href="https://www.flaticon.com/free-icons/compass"
+            title="compass icons"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-blue-200"
+          >
+            Smashicons - Flaticon
+          </a>
+        </span>
       </div>
     </aside>
   );
