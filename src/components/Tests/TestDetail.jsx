@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchTestDetail, enviarRespuesta, finalizarTest } from "./TestAPI.Js";
+import { fetchTestDetail, enviarRespuesta, finalizarTest } from "./TestAPI.js";
 
 export default function TestDetail({ token, testResult, onFinish }) {
   const [test, setTest] = useState(null);
