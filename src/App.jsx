@@ -11,7 +11,7 @@ import GoogleCallback from "./pages/google/Callback";
 import ProtectedRoute from "./components/ProtectedRoute";
 import StudentProfile from "./components/Students/StudentProfile";
 import NewsPage from "./components/News/NewsPage";
-import RegisterPage from "./pages/Registerpage";
+import RegisterPage from "./pages/RegisterPage";
 
 // 🎥 Componentes de videollamadas
 import MeetForm from "./components/Meets/MeetForm";
