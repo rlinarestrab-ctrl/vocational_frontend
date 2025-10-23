@@ -1,5 +1,4 @@
 import React from "react";
-import { Compass } from "lucide-react"; // 🧭 Icono de brújula
 
 export default function Navbar({ me, onLogout }) {
   // 🧠 Obtener datos del usuario (desde estado o localStorage)
@@ -8,22 +7,19 @@ export default function Navbar({ me, onLogout }) {
   const rol = me?.rol || localStorage.getItem("rol") || "estudiante";
 
   return (
-    <nav className="bg-blue-600 text-white px-6 py-3 shadow-md flex justify-between items-center">
-      {/* 🧭 Logo / Nombre app */}
-      <div className="flex items-center gap-2">
-        <Compass className="w-6 h-6 text-white" />
-        <span className="text-lg font-bold tracking-wide">
-          Tu Ruta Educativa
-        </span>
+    <nav className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 shadow-md flex justify-between items-center">
+      {/* 🔹 Espacio a la izquierda (sin ícono ni texto) */}
+      <div className="flex items-center">
+        {/* Puedes dejar este div vacío para mantener alineación */}
       </div>
 
-      {/* 👤 Usuario y logout */}
+      {/* 👤 Usuario y botón de cierre */}
       <div className="flex items-center gap-4">
-        <div className="text-sm">
+        <div className="text-sm text-right">
           <span className="font-semibold">
             {nombre} {apellido}
           </span>{" "}
-          <span className="bg-blue-800 text-xs px-2 py-1 rounded uppercase">
+          <span className="bg-indigo-700 text-xs px-2 py-1 rounded uppercase">
             {rol}
           </span>
         </div>
