@@ -10,7 +10,7 @@ export default function Users({ token, me }) {
     password: "",
     nombre: "",
     apellido: "",
-    rol: "estudiante",
+    rol: "",
   })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)

@@ -54,7 +54,7 @@ export default function ProtectedRoute({ children, token, allowedRoles = [] }) {
         setValid(false);
       }
     } else {
-      console.warn("⛔ Token ausente o expirado. Limpiando sesión...");
+    
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       localStorage.removeItem("me");

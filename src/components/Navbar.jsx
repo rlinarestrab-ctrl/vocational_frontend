@@ -4,7 +4,7 @@ export default function Navbar({ me, onLogout }) {
   // 🧠 Obtener datos del usuario (desde estado o localStorage)
   const nombre = me?.nombre || localStorage.getItem("nombre") || "Usuario";
   const apellido = me?.apellido || localStorage.getItem("apellido") || "";
-  const rol = me?.rol || localStorage.getItem("rol") || "admin";
+  const rol = me?.rol || localStorage.getItem("rol") || "";
 
   return (
     <nav className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 shadow-md flex justify-between items-center">

@@ -57,7 +57,7 @@ export default function Login({ onLogin }) {
       localStorage.setItem("email", user.email);
       localStorage.setItem("nombre", user.nombre || "");
       localStorage.setItem("apellido", user.apellido || "");
-      localStorage.setItem("rol", user.rol || "estudiante");
+      localStorage.setItem("rol", user.rol || "");
       localStorage.setItem("activo", user.activo);
       localStorage.setItem("me", JSON.stringify(user));
 

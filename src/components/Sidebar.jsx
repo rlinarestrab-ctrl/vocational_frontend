@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function Sidebar({ setView, view, subView, setSubView }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("me")) || {};
-  const rol = user.rol || "estudiante";
+  const rol = user.rol || "";
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
   const toggleSubmenu = (id) => {
