@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import InstitucionesForm from "./InstitucionesForm"
 import InstitucionesList from "./InstitucionesList"
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8001"
+const API_BASE = import.meta.env.VITE_INST_API || "http://localhost:8001"
 
 export default function InstitucionesPage({ token }) {
   const [instituciones, setInstituciones] = useState([])

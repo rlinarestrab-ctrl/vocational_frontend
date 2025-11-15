@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8001"
+const API_BASE = import.meta.env.VITE_INST_API || "http://localhost:8001"
 
 export default function InstitucionesForm({ token, onSaved, editing, setEditing }) {
   const [form, setForm] = useState({

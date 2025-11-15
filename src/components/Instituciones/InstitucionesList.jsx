@@ -1,6 +1,6 @@
 import React from "react"
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8001"
+const API_BASE = import.meta.env.VITE_INST_API || "http://localhost:8001"
 
 export default function InstitucionesList({ instituciones, token, onDeleted, onEdit }) {
   const del = async (id) => {
